@@ -1,10 +1,9 @@
 
 module DigitExtration
 
-include("../utilities/ConnectedComponents.jl")
-using .ConnectedComponents
+include("../utilities/ConnectedComponentStatistics.jl")
 using Flux: softmax, batch, unsqueeze
-using Images: imresize
+using Images: imresize, label_components
 
 
 export read_digits, extract_digit,
@@ -53,14 +52,21 @@ function read_digits(
 end
 
 
-function extract_digit(image::AbstractArray; radius_ratio::Float64=0.25, threshold::Float64=0.02)
-    labels, statistics = get_connected_components(image) 
+function extract_digit(image_in::AbstractArray; radius_ratio::Float64=0.25, threshold::Float64=0.02)
+    
+    bw_threshold = 0.9
+    image = copy(image_in)
+    image[image .< bw_threshold ] .= 0
+    image[image .> bw_threshold ] .= 1
+
+    labels = label_components(image) 
+
     height, width = size(image)
-    for i in 1:length(statistics)
+    for i in 1:length(unique(labels))
         image_label = copy(image)
         image_label[labels .!= i] .= 0
         if detect_in_centre(image_label, radius_ratio=radius_ratio, threshold=threshold)
-            stats = statistics[i]
+            stats = calc_connected_component_statistics(labels, i)
             width_label = abs(stats.right - stats.left)
             height_label = abs(stats.bottom - stats.top)
             length_  = max(width_label, height_label)
