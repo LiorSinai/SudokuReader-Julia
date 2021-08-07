@@ -15,11 +15,16 @@ include("../utilities/Transforms.jl");
 using .Contours
 using .Transforms
 
-export detect_grid, invert_image
+export detect_grid, preprocess, construct_grid
 
 
-function detect_grid(image::AbstractArray)
-    blackwhite = preprocess(image)
+function detect_grid(image::AbstractArray; max_size=1024, blur_window_size=5, σ=1, threshold_window_size=25)
+    blackwhite = preprocess(image, 
+        max_size=max_size, 
+        blur_window_size=blur_window_size,
+        σ=σ,
+        threshold_window_size=threshold_window_size
+        )
 
     # assumption: grid is the largest contour in the image
     contours = find_contours(blackwhite, external_only=true)
@@ -27,18 +32,6 @@ function detect_grid(image::AbstractArray)
     par = fit_parallelogram(contours[idx_max])
     
     blackwhite, par
-end
-
-
-function invert_image(image)
-    image_inv = Gray.(image)
-    height, width = size(image)
-    for i in 1:height
-        for j in 1:width
-            image_inv[i, j] = 1 - image_inv[i, j]
-        end
-    end
-    return image_inv
 end
 
 
@@ -61,5 +54,20 @@ function preprocess(image::AbstractArray; max_size=1024, blur_window_size=5, σ=
 
     blackwhite
 end
+
+
+function construct_grid(height::Int, width::Int; nblocks::Int=3)
+    grid = []
+    step_i = height/nblocks
+    step_j = width/nblocks
+    for i in 0:nblocks
+        push!(grid, [(step_i * i, 1), (step_i * i, width)])
+    end
+    for j in 0:nblocks
+        push!(grid, [(1, step_j * j), (height, step_j * j)])
+    end
+    grid
+end
+
 
 end # module GridDetection

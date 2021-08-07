@@ -38,8 +38,8 @@ valid_data = (Flux.batch(x_test[1:n_valid]), y_test[:, 1:n_valid])
 test_data = (Flux.batch(x_test[n_valid+1:end]), y_test[:, n_valid+1:end])
 
 # build model
-output_path = joinpath("DigitDetection\\models", "cnn_tiny")
-model = build_model_tiny()
+output_path = joinpath("DigitDetection\\models", "LeNet5")
+model = LeNet5()
 display(model)
 println("")
 
