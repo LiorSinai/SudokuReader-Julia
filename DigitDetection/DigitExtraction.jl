@@ -26,7 +26,7 @@ function read_digits(
 
     grid = zeros(Int, (9, 9))
     centres =  [(-1.0, -1.0) for i in 1:9, j in 1:9]
-    probs = zeros(Float32, (9, 9))
+    probabilities = zeros(Float32, (9, 9))
 
     for (i_grid, i_img) in enumerate(1:step_i:height)
         for (j_grid, j_img) in enumerate(1:step_j:width)
@@ -41,14 +41,14 @@ function read_digits(
                 grid[i_grid, j_grid] = ŷ
                 
                 centre = (centre[1] + prev_i, centre[2] + prev_j)
-                probs[i_grid, j_grid] = prob
+                probabilities[i_grid, j_grid] = prob
             else
                 centre = (prev_i + step_i/2, prev_j + step_j/2)
             end
             centres[i_grid, j_grid] = centre
         end
     end
-    grid, centres, probs
+    grid, centres, probabilities
 end
 
 
@@ -128,7 +128,7 @@ function pad_image(image::AbstractArray{T}; pad_ratio=0.1) where T
 end
 
 
-function prediction(model, image::AbstractArray, pad_ratio=0.1)
+function prediction(model, image::AbstractArray, pad_ratio=0.2)
     image = pad_image(image, pad_ratio=pad_ratio)
     image = imresize(image, (28, 28))
     x = batch([unsqueeze(Float32.(image), 3)])

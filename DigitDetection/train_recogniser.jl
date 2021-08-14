@@ -22,7 +22,7 @@ include("nn.jl")
 
 
 #### load data
-@time data, labels = load_data("datasets/74k_numbers_28x28/");
+@time data, labels = load_data("../../datasets/74k_numbers_28x28/");
 println("data loaded\n")
 
 ### transform test set
@@ -92,14 +92,17 @@ function train!(loss, ps, train_data, opt, acc, valid_data; n_epochs=100)
     end
     history
 end
+start_time = time_ns()
 history = train!(
     loss, params(model), train_data, opt, 
     accuracy, valid_data, n_epochs=20
     )
-println("done training\n")
+end_time = time_ns() - start_time
+println("done training")
+@printf "time taken: %.2fs\n" end_time/1e9
 
 test_acc = accuracy(model(test_data[1]), test_data[2])
-@printf "test accuracy for %d samples: %.4f" size(test_data[2], 2) test_acc
+@printf "test accuracy for %d samples: %.4f\n" size(test_data[2], 20) test_acc
 
 # plot history 
 using Plots
@@ -117,4 +120,4 @@ plot!(canvas, [epochs[end]], [test_acc], markershape=:star, label="test")
 plot!(canvas, legend=:topleft)
 plot!(canvas, ylims=(ylims(canvas)[1], 1))
 
-# savefig(canvas, "training_LeNet5.png")
+savefig(canvas, "history.png")

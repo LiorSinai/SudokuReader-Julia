@@ -9,7 +9,7 @@ using StaticArrays
 using Images
 
 export fit_rectangle, fit_parallelogram, 
-    getPerspectiveTransform, fourPointTransform, 
+    get_perspective_matrix, four_point_transform, perspective_transform,
     imwarp, apply_homography
     
 
@@ -54,7 +54,7 @@ end
 
 
 """
-getPerspectiveTransform(source::AbstractArray, destination::AbstractArray)
+get_perspective_matrix(source::AbstractArray, destination::AbstractArray)
 
 Compute the elements of the matrix for projective transformation from source to destination.
 Source and destination must have the same number of points.
@@ -73,7 +73,7 @@ Similarly for v and rearrange into the following matrix:
     [u1; u2; u3; u4; v1; v2; v3; v4] = A·[c11; c12; c13; c21; c22; c23; c31; c32]
     B = A ⋅ X
 """
-function getPerspectiveMatrix(source::AbstractArray, destination::AbstractArray)
+function get_perspective_matrix(source::AbstractArray, destination::AbstractArray)
     if (length(source) != length(destination))
         error("$(length(source))!=$(length(destination)). Source must have the same number of points as destination")
     elseif length(source) < 4
@@ -126,54 +126,27 @@ function order_points(corners)
 end
 
 
-function fourPointTransform(image::AbstractArray, corners::AbstractVector)
+function four_point_transform(image::AbstractArray, corners::AbstractVector)
     parallelogram = order_points(corners)
-    (topleft, topright, bottomright, bottomleft) = parallelogram
+    rect = fit_rectangle(corners)
+    destination = [CartesianIndex(point[1] - rect[1][1] + 1, point[2] - rect[1][2] + 1) for point in rect]
+    maxWidth = destination[2][1] - destination[1][1] 
+    maxHeight = destination[3][2] - destination[2][2] 
 
-	# compute the width of the new image
-	widthA = (bottomright[1] - bottomleft[1])^2 + (bottomright[2] - bottomleft[2])^2
-	widthB = (topright[1] - topleft[1])^2 + (topright[2] - topleft[2])^2
-	maxWidth = Int(round(sqrt(max(widthA, widthB))))
-
-    # compute the height of the new image
-	heightA = (topright[1] - bottomright[1]) ^2 + (topright[2] - bottomright[2]) ^ 2
-	heightB = (topleft[1] - bottomleft[1]) ^ 2 + (topleft[2] - bottomleft[2]) ^ 2
-	maxHeight = Int(round(sqrt(max(heightA, heightB))))	
-
-    destination = [
-        CartesianIndex(1, 1),
-        CartesianIndex(maxWidth, 1),
-        CartesianIndex(maxWidth, maxHeight),
-        CartesianIndex(1, maxHeight)
-    ]
-
-    M = getPerspectiveMatrix(parallelogram, destination)
+    M = get_perspective_matrix(parallelogram, destination)
     invM = inv(M)
-    extend1(v) = [v[1], v[2], 1]
-    perspective_transform = PerspectiveMap() ∘ LinearMap(invM) ∘ extend1
+    transform = perspective_transform(invM)
 
-    # function perspective_transform(v::SVector) # slower code
-    #     U = invM * [v[1], v[2], 1]
-    #     scale = 1/U[3]
-    #     [U[1] * scale, U[2] * scale]
-    # end
-
-    warped = warp(image, perspective_transform, (1:maxWidth, 1:maxHeight))
+    warped = warp(image, transform, (1:maxWidth, 1:maxHeight))
     warped, invM
 end
+
+extend1(v) = [v[1], v[2], 1]
+perspective_transform(M::Matrix) = PerspectiveMap() ∘ LinearMap(M) ∘ extend1
 
 
 function rgb_to_float(pixel::AbstractRGB)
     Float32.([red(pixel), green(pixel), blue(pixel)])
-end
-
-"""
-apply_homography(point, M::Matrix)
-"""
-function apply_homography(point, M::Matrix)
-    U = M * [point[1]; point[2]; 1]
-    scale = 1/U[3]
-    [U[1] * scale, U[2] * scale]
 end
 
 
@@ -182,7 +155,15 @@ function get_color(image::AbstractArray{T}, point) where T
     image[ind]
 end
 
+"""
+imwarp(image, invM, dest_size)
 
+This function is only for illustrative purposes only.
+It is a slower and less accurate version of ImageTransformations.warp.
+It implements a backwards transformation algorithm for a homography transformation matrix. 
+Colors are approximated as the pixel the inverse transform lands in.
+No further interpolation is done.
+"""
 function imwarp(image::AbstractArray{T}, invM::Matrix, dest_size::Tuple{Int, Int}) where T
     warped = zeros(T, dest_size...)
 

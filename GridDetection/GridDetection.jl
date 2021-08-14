@@ -18,13 +18,8 @@ using .Transforms
 export detect_grid, preprocess, construct_grid
 
 
-function detect_grid(image::AbstractArray; max_size=1024, blur_window_size=5, σ=1, threshold_window_size=25)
-    blackwhite = preprocess(image, 
-        max_size=max_size, 
-        blur_window_size=blur_window_size,
-        σ=σ,
-        threshold_window_size=threshold_window_size
-        )
+function detect_grid(image::AbstractArray; kwargs...)
+    blackwhite = preprocess(image; kwargs...)
 
     # assumption: grid is the largest contour in the image
     contours = find_contours(blackwhite, external_only=true)
@@ -35,7 +30,12 @@ function detect_grid(image::AbstractArray; max_size=1024, blur_window_size=5, σ
 end
 
 
-function preprocess(image::AbstractArray; max_size=1024, blur_window_size=5, σ=1, threshold_window_size=25)
+function preprocess(
+    image::AbstractArray; 
+    max_size=1024, 
+    blur_window_size=5, σ=1, 
+    threshold_window_size=15, threshold_percentage=7
+    )
     gray = Gray.(image)
 
     # resize
@@ -49,7 +49,7 @@ function preprocess(image::AbstractArray; max_size=1024, blur_window_size=5, σ=
     gray = imfilter(gray, kernel)
 
     #binarize
-    blackwhite = binarize(gray, AdaptiveThreshold(window_size=threshold_window_size))
+    blackwhite = binarize(gray, AdaptiveThreshold(window_size=threshold_window_size, percentage=threshold_percentage))
     blackwhite = invert_image(blackwhite)
 
     blackwhite

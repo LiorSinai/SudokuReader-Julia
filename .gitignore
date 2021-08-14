@@ -28,3 +28,4 @@ Manifest.toml
 # project folders
 Deprecated/*
 DigitDetection/models/*
+images/outputs/*
