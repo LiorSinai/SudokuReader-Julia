@@ -8,7 +8,7 @@ using ImageTransformations, CoordinateTransformations
 using StaticArrays
 using Images
 
-export fit_rectangle, fit_parallelogram, 
+export fit_rectangle, fit_quad, 
     get_perspective_matrix, four_point_transform, perspective_transform,
     imwarp, apply_homography
     
@@ -34,7 +34,7 @@ function fit_rectangle(points::AbstractVector)
 end
 
 
-function fit_parallelogram(points::AbstractVector) 
+function fit_quad(points::AbstractVector) 
     rect = fit_rectangle(points)
 
     corners = copy(rect)
@@ -127,13 +127,13 @@ end
 
 
 function four_point_transform(image::AbstractArray, corners::AbstractVector)
-    parallelogram = order_points(corners)
+    quad = order_points(corners)
     rect = fit_rectangle(corners)
     destination = [CartesianIndex(point[1] - rect[1][1] + 1, point[2] - rect[1][2] + 1) for point in rect]
     maxWidth = destination[2][1] - destination[1][1] 
     maxHeight = destination[3][2] - destination[2][2] 
 
-    M = get_perspective_matrix(parallelogram, destination)
+    M = get_perspective_matrix(quad, destination)
     invM = inv(M)
     transform = perspective_transform(invM)
 

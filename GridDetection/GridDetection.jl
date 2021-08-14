@@ -24,9 +24,9 @@ function detect_grid(image::AbstractArray; kwargs...)
     # assumption: grid is the largest contour in the image
     contours = find_contours(blackwhite, external_only=true)
     idx_max = argmax(map(calc_area_contour, contours))
-    par = fit_parallelogram(contours[idx_max])
+    quad = fit_quad(contours[idx_max])
     
-    blackwhite, par
+    blackwhite, quad
 end
 
 

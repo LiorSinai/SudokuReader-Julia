@@ -68,9 +68,9 @@ This is mostly done with Images.jl and related modules as well as custom code.
         2. Blur → removes noise.
         3. Convert to black and white by applying an adaptive threshold.
     2. Find external contours.
-    3. Assume largest contour is the grid. Fit a parallelogram to the largest contour.
+    3. Assume largest contour is the grid. Fit a quadrilateral to the largest contour.
 2. Straighten.
-    1. Solve linear system for a homography matrix of a four point transform from a parallelogram to a rectangle.
+    1. Solve linear system for a homography matrix of a four point transform from a quadrilateral to a rectangle.
     2. Warp image according to the homography matrix.
 3. Digit detection.
     1. Divide the rectangle into a grid of 9×9 blocks.
