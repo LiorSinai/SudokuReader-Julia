@@ -11,9 +11,11 @@ Lior Sinai, 1 August 2021
 
 using FileIO
 using Random
+using DataFrames, CSV
 
 
 function load_data(inpath)
+    # data is images within a folder with name dir/label/filename.png
     digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     data = Array{Float32, 3}[] # Flux expects Float32 only, else raises a warning
@@ -28,6 +30,21 @@ function load_data(inpath)
             push!(labels, digit)
         end
     end
+    data, labels
+end
+
+
+function load_mnist_data(inpath)
+    # data is in CSV format
+    data = Array{Float32, 3}[] # Flux expects Float32 only, else raises a warning
+    labels = Int[]
+    df = CSV.read(inpath, DataFrame)
+    for row in eachrow(df)
+        image = permutedims(reshape(collect(row[2:end]), (28, 28)))/(255f0)
+        image = Flux.unsqueeze(Float32.(image), 3)
+        push!(data, image)
+        push!(labels, row[1])
+        end
     data, labels
 end
 
@@ -59,4 +76,25 @@ function count_parameters(model)
         end
     end
     n_params
+end
+
+
+"""
+confusion_matrix(ŷ, y) \right Matrix{T}
+
+Returns a confusion matrix. Rows are the actual classes and the columns are the predicted classes
+"""
+function confusion_matrix(ŷ::Vector{T}, y::Vector{T}, labels=1:maximum(y)) where T
+    if length(y) != length(ŷ)
+        throw(DimensionMismatch("y_actual length is not the same as y_pred length"))
+    end
+    n = length(labels)
+    C = zeros(Int, n, n)
+    for (i, label_actual) in enumerate(labels)
+        idxs_true = y .== label_actual
+        for (j, label_pred) in enumerate(labels)
+            C[i, j] = count(ŷ[idxs_true] .== label_pred)
+        end
+    end
+    return C
 end

@@ -14,7 +14,7 @@ sigmoid = σ
 
 function build_model_nn()
     return Chain(
-        flatten, 
+        Flux.flatten, 
         Dense(784, 32, sigmoid),
         Dense(32, 10),
     )

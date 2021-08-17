@@ -22,7 +22,11 @@ include("nn.jl")
 
 
 #### load data
-@time data, labels = load_data("../../datasets/74k_numbers_28x28/");
+@time data_char74k, labels_char74k = load_data("../../datasets/74k_numbers_28x28/");
+@time data_mnist, labels_mnist = load_mnist_data("../../datasets/mnist_test.csv");
+
+data = vcat(data_char74k, data_mnist)
+labels = vcat(labels_char74k, labels_mnist)
 println("data loaded\n")
 
 ### transform test set
@@ -38,7 +42,7 @@ valid_data = (Flux.batch(x_test[1:n_valid]), y_test[:, 1:n_valid])
 test_data = (Flux.batch(x_test[n_valid+1:end]), y_test[:, n_valid+1:end])
 
 # build model
-output_path = joinpath("DigitDetection\\models", "LeNet5")
+output_path = joinpath("DigitDetection\\models", "LeNet5_both")
 model = LeNet5()
 display(model)
 println("")
@@ -102,7 +106,7 @@ println("done training")
 @printf "time taken: %.2fs\n" end_time/1e9
 
 test_acc = accuracy(model(test_data[1]), test_data[2])
-@printf "test accuracy for %d samples: %.4f\n" size(test_data[2], 20) test_acc
+@printf "test accuracy for %d samples: %.4f\n" size(test_data[2], 2) test_acc
 
 # plot history 
 using Plots
@@ -120,4 +124,4 @@ plot!(canvas, [epochs[end]], [test_acc], markershape=:star, label="test")
 plot!(canvas, legend=:topleft)
 plot!(canvas, ylims=(ylims(canvas)[1], 1))
 
-savefig(canvas, "history.png")
+savefig(canvas, "images/outputs/history.png")

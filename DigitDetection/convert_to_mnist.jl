@@ -9,7 +9,7 @@ using Images
 
 inpath = "..\\..\\datasets\\74k_numbers"
 outpath = inpath *"_28x28"
-include("..\\Utilities\\invert_image.jl");
+include("..\\utilities\\invert_image.jl");
 
 if !isdir(outpath)
     mkdir(outpath)

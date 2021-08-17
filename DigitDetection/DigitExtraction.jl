@@ -52,8 +52,7 @@ function read_digits(
 end
 
 
-function extract_digit(image_in::AbstractArray; radius_ratio::Float64=0.25, threshold::Float64=0.02)
-    
+function extract_digit(image_in::AbstractArray; kwargs...)
     bw_threshold = 0.9
     image = copy(image_in)
     image[image .< bw_threshold ] .= 0
@@ -65,7 +64,7 @@ function extract_digit(image_in::AbstractArray; radius_ratio::Float64=0.25, thre
     for i in 1:length(unique(labels))
         image_label = copy(image)
         image_label[labels .!= i] .= 0
-        if detect_in_centre(image_label, radius_ratio=radius_ratio, threshold=threshold)
+        if detect_in_centre(image_label; kwargs...)
             stats = calc_connected_component_statistics(labels, i)
             width_label = abs(stats.right - stats.left)
             height_label = abs(stats.bottom - stats.top)
@@ -91,12 +90,12 @@ detect_in_centre(image::AbstractArray; [radius_ratio], [threshold])
 
 Detect an object in a region of interest. This is done by convolving it with a circle.
 """
-function detect_in_centre(image::AbstractArray; radius_ratio::Float64=0.25, threshold::Float64=0.02)
+function detect_in_centre(image::AbstractArray; radius_ratio::Float64=0.25, threshold::Float64=0.10)
     height, width = size(image)
     radius = min(height, width) * radius_ratio
     kernel = make_circle_kernel(height, width, radius)
     conv = kernel .* image
-    detected = sum(conv .!= 0)/(height * width) > threshold
+    detected = sum(conv .!= 0)/(pi * radius * radius) > threshold
     detected
 end
 

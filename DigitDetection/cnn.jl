@@ -26,7 +26,6 @@ function build_model_cnn_dropout(; k1=5, n1=16, k2=5, n2=32, pad=0)
     output_dim = calc_output_size(output_dim, max_pool_window, max_pool_window, 0)
     output_dim = calc_output_size(output_dim, k2, stride, pad)
     output_dim = calc_output_size(output_dim, max_pool_window, max_pool_window, 0)
-
     output_size = (output_dim, output_dim, n2)
 
     return Chain(
@@ -36,7 +35,7 @@ function build_model_cnn_dropout(; k1=5, n1=16, k2=5, n2=32, pad=0)
         Conv((k2, k2), n1=>n2, stride=stride, pad=pad, relu),
         MaxPool((max_pool_window, max_pool_window)),
 
-        flatten,
+        Flux.flatten,
         Dropout(0.5),
         Dense(prod(output_size), 10),
     )
@@ -56,7 +55,7 @@ function build_model_tiny()
     return Chain(
         Conv((5, 5), 1=>6, stride=stride_, pad=pad, relu),
         MaxPool((4, 4)),
-        flatten,
+        Flux.flatten,
         Dense(prod(output_size), 10),
     )
 end
@@ -85,7 +84,7 @@ function build_model_huge()
         Conv((3, 3), 32=>64, stride=stride_, pad=pad, relu),
         MaxPool((2, 2)),
         Dropout(0.25),
-        flatten,
+        Flux.flatten,
         Dense(prod(output_size), 128),
         Dropout(0.5),
         Dense(128, 10),
@@ -113,7 +112,7 @@ function build_model_mastery()
     return Chain(
         Conv((3, 3), 1=>32, stride=stride_, pad=pad, relu),
         MaxPool((2, 2)),
-        flatten,
+        Flux.flatten,
         Dense(prod(output_size), 100),
         Dense(100, 10),
     )

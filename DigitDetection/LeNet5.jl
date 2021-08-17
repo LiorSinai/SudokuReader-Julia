@@ -16,7 +16,7 @@ function LeNet5(; imgsize=(28,28,1), nclasses=10)
             MaxPool((2, 2)),
             Conv((5, 5), 6=>16, relu),
             MaxPool((2, 2)),
-            flatten,
+            Flux.flatten,
             Dense(prod(out_conv_size), 120, relu), 
             Dense(120, 84, relu), 
             Dense(84, nclasses),

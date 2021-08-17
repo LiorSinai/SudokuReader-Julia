@@ -21,11 +21,14 @@ docs/site/
 Manifest.toml
 
 
+# VS Code
+.vscode
+
 # Jupter Notebooks
 .ipynb_checkpoints
 
 
 # project folders
-Deprecated/*
-DigitDetection/models/*
+Deprecated/
+DigitDetection/models/
 images/outputs/
