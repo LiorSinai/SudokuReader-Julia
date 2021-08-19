@@ -31,12 +31,20 @@ Then to use the program, either run [SudokuReader.ipynb](SudokuReader.ipynb) or 
 image = "images/nytimes_20210807.jpg";
 image = load(image_path)
 # 1 grid
-blackwhite, par = detect_grid(image, max_size=1024, blur_window_size=5, σ=1, threshold_window_size=25);
+blackwhite, quad = detect_grid(
+    image; 
+    max_size=1024, 
+    blur_window_size=5, σ=1.1, 
+    threshold_window_size=15, threshold_percentage=7
+    );
 # 2 straighten
-warped, invM = four_point_transform(blackwhite, par)
+warped, invM = four_point_transform(blackwhite, quad)
 # 3 Digit detection
 BSON.@load "DigitDetection\\models\\LeNet5_e20.bson" model
-grid, centres, probs = read_digits(warped, model, offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.02)
+grid, centres, probs = read_digits(
+    warped, model, 
+    offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.1
+    );
 ```
 
 Each of the 3 outputs are 9×9 matrices. They can be used to generate an output image as follows:
