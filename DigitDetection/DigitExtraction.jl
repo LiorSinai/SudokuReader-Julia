@@ -4,7 +4,7 @@ module DigitExtration
 include("../utilities/ConnectedComponentStatistics.jl")
 using Flux: softmax, batch, unsqueeze
 using Images: imresize, label_components
-
+using ImageBinarization
 
 export read_digits, extract_digit,
     detect_in_centre, make_circle_kernel,
@@ -53,10 +53,9 @@ end
 
 
 function extract_digit(image_in::AbstractArray; kwargs...)
-    bw_threshold = 0.9
     image = copy(image_in)
-    image[image .< bw_threshold ] .= 0
-    image[image .> bw_threshold ] .= 1
+    # have to binarize again because of warping
+    image = binarize(image, Polysegment()) # global binarization algorithm for foreground and background
 
     labels = label_components(image) 
 
@@ -118,7 +117,7 @@ end
 make_circle_kernel(height::Int, width::Int, radius::Int) = make_circle_kernel(height, width, Float64(radius))
 
 
-function pad_image(image::AbstractArray{T}; pad_ratio=0.1) where T
+function pad_image(image::AbstractArray{T}; pad_ratio=0.15) where T
     height, width = size(image)
     pad = floor(Int, pad_ratio * max(height, width))
     imnew = zeros(T, (height + 2pad, width + 2pad))
@@ -127,7 +126,7 @@ function pad_image(image::AbstractArray{T}; pad_ratio=0.1) where T
 end
 
 
-function prediction(model, image::AbstractArray, pad_ratio=0.2)
+function prediction(model, image::AbstractArray, pad_ratio=0.1)
     image = pad_image(image, pad_ratio=pad_ratio)
     image = imresize(image, (28, 28))
     x = batch([unsqueeze(Float32.(image), 3)])

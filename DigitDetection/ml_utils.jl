@@ -34,11 +34,15 @@ function load_data(inpath)
 end
 
 
-function load_mnist_data(inpath)
+function load_mnist_data(inpath; rng=Random.GLOBAL_RNG, num_samples::Int=-1)
     # data is in CSV format
     data = Array{Float32, 3}[] # Flux expects Float32 only, else raises a warning
     labels = Int[]
     df = CSV.read(inpath, DataFrame)
+    if num_samples > 0
+        idxs = randperm(rng, nrow(df))[1:num_samples]
+        df = df[idxs, :]
+    end
     for row in eachrow(df)
         image = permutedims(reshape(collect(row[2:end]), (28, 28)))/(255f0)
         image = Flux.unsqueeze(Float32.(image), 3)
@@ -96,5 +100,5 @@ function confusion_matrix(ŷ::Vector{T}, y::Vector{T}, labels=1:maximum(y)) whe
             C[i, j] = count(ŷ[idxs_true] .== label_pred)
         end
     end
-    return C
+    C
 end
