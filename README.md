@@ -1,6 +1,7 @@
 # SudokuReader.jl
-
 By Lior Sinai
+
+## Overview
 
 This is a Julia program that can read in an image of a Suduko puzzle,
 extract the numbers and place them in a corresponding grid.
@@ -23,16 +24,16 @@ This repository does not include solver code. A solver I wrote in Julia can be f
 First train the model:
 1. Download data from the [Chars74k dataset](http://www.ee.surrey.ac.uk/CVSSP/demos/chars74k/). We only need `EnglishFnt.tgz` and sudirectories of Sample000-Sample010. 
 2. Run the `convert_to_mnist.jl` script. 
-3. Run the `train_recogniser.jl` script.
+3. Run the `train_recogniser.jl` script. This will create LeNet5_e20.bson.
 
-Then to use the program:
+Then to use the program, either run [SudokuReader.ipynb](SudokuReader.ipynb) or code the following:
 ```
 image = "images/nytimes_20210807.jpg";
 image = load(image_path)
 # 1 grid
 blackwhite, par = detect_grid(image, max_size=1024, blur_window_size=5, σ=1, threshold_window_size=25);
 # 2 straighten
-warped, invM = fourPointTransform(blackwhite, par)
+warped, invM = four_point_transform(blackwhite, par)
 # 3 Digit detection
 BSON.@load "DigitDetection\\models\\LeNet5_e20.bson" model
 grid, centres, probs = read_digits(warped, model, offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.02)
@@ -44,18 +45,17 @@ threshold = 0.9
 image_out = imresize(image, size(blackwhite));
 canvas = plot(image_out, ticks=nothing, border=:none, size=(800, 600));
 
+centres_aligned = align_centres(centres, grid_orig .> 0)
 for i in 1:9
     for j in 1:9
-        centre = centres[i, j]
-        centre_unwarped = apply_homography(centre, invM)
+        centre = centres_aligned[i, j]
+        centre_unwarped = perspective_transform(invM)(centre)
         label =  (probs[i, j] > threshold) ? string(grid[i, j]) : "·"
         annotate!(canvas, centre_unwarped[2], centre_unwarped[1], label, :yellow)
     end
 end
 canvas
-
 ```
-
 
 ## Algorithm
 
@@ -82,8 +82,12 @@ This is mostly done with Images.jl and related modules as well as custom code.
 
 The algorithm works well on well selected images. However it is not robust and the false positivity rate is high.
 
+## Notebooks
 
-# Dependencies
+I have provided development notebooks in the [notebooks](notebooks) folder.
+These are useful for getting around Julia's slow start up times for debugging.
+
+## Dependencies
 
 This repository uses the following packages:
 - Images.jl
