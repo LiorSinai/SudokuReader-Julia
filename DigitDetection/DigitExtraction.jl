@@ -16,7 +16,7 @@ function read_digits(
     model; 
     offset_ratio=0.1,
     radius_ratio::Float64=0.25, 
-    detection_threshold::Float64=0.02, 
+    detection_threshold::Float64=0.10, 
     )
     height, width = size(image)
     step_i = ceil(Int, height / 9)
@@ -72,7 +72,7 @@ function extract_digit(image_in::AbstractArray; kwargs...)
             # note: the centroid is not a good chocie for a visual centre 
             centre = (stats.top + Int(round(height_label/2)), stats.left + Int(round(width_label/2)))
 
-            # make square and pad
+            # make square
             top = max(1, floor(Int, centre[1] - length_/2))
             left = max(1, floor(Int,centre[2] - length_/2))
             bottom = min(height, ceil(Int, centre[1] + length_/2))
