@@ -55,7 +55,7 @@ end
 function extract_digit(image_in::AbstractArray; kwargs...)
     image = copy(image_in)
     # have to binarize again because of warping
-    image = binarize(image, Polysegment()) # global binarization algorithm for foreground and background
+    image = binarize(image, Otsu()) # global binarization algorithm
 
     labels = label_components(image) 
 
@@ -126,7 +126,7 @@ function pad_image(image::AbstractArray{T}; pad_ratio=0.15) where T
 end
 
 
-function prediction(model, image::AbstractArray, pad_ratio=0.1)
+function prediction(model, image::AbstractArray, pad_ratio=0.2)
     image = pad_image(image, pad_ratio=pad_ratio)
     image = imresize(image, (28, 28))
     x = batch([unsqueeze(Float32.(image), 3)])
