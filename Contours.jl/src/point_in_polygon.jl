@@ -1,30 +1,27 @@
-module PointInPolygon
-
-export point_in_polygon
 
 """
-on_segment(point, segment)
+    on_segment(point, segment)
 
 Determine if a point q lies on the segement pr. 
 """
-function on_segment(point, segment)
+function on_segment(q, segment)
     p, r = segment
     return (
-        (point[1] <= max(p[1], r[1])) &&
-        (point[1] >= min(p[1], r[1])) &&
-        (point[2] <= max(p[2], r[2])) &&
-        (point[2] >= min(p[2], r[2]))
-        ) && (get_orientation(p, point, r) == 0)
+        (q[1] <= max(p[1], r[1])) &&
+        (q[1] >= min(p[1], r[1])) &&
+        (q[2] <= max(p[2], r[2])) &&
+        (q[2] >= min(p[2], r[2]))
+        ) && (get_orientation(p, q, r) == 0)
 end
 
 
 """
-get_orientation(p, q, r)
+    get_orientation(p, q, r)
 
 Determine orientation of three points
-0 -> co-linear
-1 -> clockwise
-2 -> counter-clockwise
+- 0 -> co-linear
+- 1 -> clockwise
+- 2 -> counter-clockwise
 """
 function get_orientation(p, q, r)
     cross_product = (q[2] - p[2]) * (r[1] - q[1]) - (r[2] - q[2]) * (q[1] - p[1])
@@ -67,13 +64,12 @@ end
 
 
 """
-point_in_polygon(point, poylgon::AbstractArray)
+    point_in_polygon(point, vertices)
 
 Based on "A Simple and Correct Even-Odd Algorithm for the Point-in-Polygon Problem for Complex Polygons" 
-by Michael Galetzka1 and Patrick Glauner2 (2017). This algorithm is an an extension of the odd-even ray algorithm.
+by Michael Galetzka and Patrick Glauner (2017). This algorithm is an an extension of the odd-even ray algorithm.
 It skips vertices that are on the ray. To compensate, the ray is projected backwards (to the left) so that an 
 intersection can be found for a skipped vertix if needed.
-
 """
 function point_in_polygon(point, vertices::AbstractArray, on_border_is_inside=true)
     n =  length(vertices)
@@ -110,7 +106,7 @@ function point_in_polygon(point, vertices::AbstractArray, on_border_is_inside=tr
             end
             skipped_right = skipped_right || (vertices[next_s][1] > point[1])
         end
-        # step 3b: edge with the intersect with the ray
+        # step 3b: edge intersect with the ray
         edge = [vertices[s], vertices[next_s]]
         intersect = 0
         if (next_s - s) == 1 || (s==n && next_s ==1) #3b.i
@@ -123,6 +119,3 @@ function point_in_polygon(point, vertices::AbstractArray, on_border_is_inside=tr
     end
     return (num_intersections % 2) == 1
 end
-
-
-end # module PointInPolygon

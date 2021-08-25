@@ -8,7 +8,7 @@ using Images
 using ImageFiltering
 using ImageBinarization
 
-include("../utilities/Contours.jl");
+include("../Contours.jl/src/Contours.jl");
 include("../utilities/invert_image.jl");
 include("../utilities/Transforms.jl");
 
@@ -23,7 +23,7 @@ function detect_grid(image::AbstractArray; kwargs...)
 
     # assumption: grid is the largest contour in the image
     contours = find_contours(blackwhite, external_only=true)
-    idx_max = argmax(map(calc_area_contour, contours))
+    idx_max = argmax(map(area_contour, contours))
     quad = fit_quad(contours[idx_max])
     
     blackwhite, quad

@@ -3,8 +3,7 @@ Lior Sinai, 28 July 2021
 =#
 
 using Test
-include("../Utilities/PointInPolygon.jl")
-using .PointInPolygon
+include("../src/point_in_polygon.jl")
 
 H_polygon = (
     [(2, 10), (4, 10), (4, 6), (6, 6), (6, 10), (8, 10), (8, 1), (6, 1), (6, 4), (4, 4), (4, 1), (2, 1)],
