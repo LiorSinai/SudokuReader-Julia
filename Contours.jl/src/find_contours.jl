@@ -15,7 +15,6 @@ Edits by Lior sinai
 
 =#
 
-
 function clockwise(dir)
     return (dir)%8 + 1
 end
@@ -42,8 +41,6 @@ function from_to(from, to, dir_delta)
     delta = to-from
     return findall(x->x == delta, dir_delta)[1]
 end
-
-
 
 function follow_border(image, p0, p2, nbd, done, dir_delta)
     border = CartesianIndex[]

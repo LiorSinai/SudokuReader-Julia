@@ -21,16 +21,14 @@ function draw_contours!(image::AbstractArray, contours::AbstractArray, color)
     end
 end
 
-
-
 abstract type AbstractFillAlgorithm end
 
 """
     fill_contours!(image, color, contours, [f::AbstractFillAlgorithm])
 
-For f, use:
-1. Boundary4Fill() - fast but not robust
-2. ScanFill() - slower but more robust. Default
+For `f`, use:
+1. `Boundary4Fill()` - fast but not robust.
+2. `ScanFill()` - slower but more robust. Default.
 """
 function fill_contours!(image::AbstractArray, contours,  color, f::AbstractFillAlgorithm)
     for cnt in contours
@@ -42,9 +40,9 @@ fill_contours!(image::AbstractArray, contours,  color) = fill_contours!(image, c
 """
     fill_contour!(image, color, contour, [f::AbstractFillAlgorithm])
 
-For f, use:
-1. Boundary4Fill() - fast but not robust
-2. ScanFill() - slower but more robust. Default
+For `f`, use:
+1. `Boundary4Fill()` - fast but not robust.
+2. `ScanFill()` - slower but more robust. Default.
 """
 function fill_contour!(image::AbstractArray, contour::Array{CartesianIndex}, color, f::AbstractFillAlgorithm)
     f(image, contour, color)
@@ -108,7 +106,6 @@ function in_bounds(bounds, point)
     top, bottom, left, right = bounds
     (top <= point[1] <= bottom) && (left <= point[2] <= right)
 end
-
 
 """
     ScanFill(image, contour, color)

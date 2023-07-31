@@ -8,12 +8,16 @@ using ImageTransformations, CoordinateTransformations
 using StaticArrays
 using Images
 
-export fit_rectangle, fit_quad, 
-    get_perspective_matrix, four_point_transform, perspective_transform,
-    imwarp, apply_homography
+export fit_rectangle, fit_quad
+export get_perspective_matrix, four_point_transform, perspective_transform
     
+"""
+    fit_rectangle(points)
 
-function fit_rectangle(points::AbstractVector)
+Fit a tight rectangle which encompasses all points.
+Corners are: (top-left, top-right, bottom-right, bottom-left).
+"""
+function fit_rectangle(points::Vector{<:CartesianIndex})
     # return corners in top-left, top-right, bottom-right, bottom-left
     min_x, max_x, min_y, max_y = typemax(Int), typemin(Int), typemax(Int), typemin(Int)
     for point in points
@@ -33,7 +37,12 @@ function fit_rectangle(points::AbstractVector)
     return corners
 end
 
+"""
+    fit_quad(points)
 
+Fit a tight quadrilateral which encompasses all points.
+Corners are: (top-left, top-right, bottom-right, bottom-left).
+"""
 function fit_quad(points::AbstractVector) 
     rect = fit_rectangle(points)
 
@@ -52,26 +61,46 @@ function fit_quad(points::AbstractVector)
     return corners
 end
 
-
 """
-get_perspective_matrix(source::AbstractArray, destination::AbstractArray)
+    get_perspective_matrix(source::AbstractArray, destination::AbstractArray)
 
 Compute the elements of the matrix for projective transformation from source to destination.
 Source and destination must have the same number of points.
 
-Transformation is:
-| u |   | c11 c12 c13 | | x |
-| v | = | c21 c22 c23 |·| y |
-| w |   | c31 c32   1 | | 1 |
+The transformation is:
+```
+| u' |   | c11 c12 c13 | | x |
+| v' | = | c21 c22 c23 |·| y |
+| w  |   | c31 c32   1 | | 1 |
+```
 
-So that u' = u/w, v'=v/w where w = 1/(focal length) of the pinhole camera. 
+The warped pixel points `u` and `v` are normalized by the focal length `w = 1/(focal length)` of the pinhole camera:
+```
+u = u'/w
+v = v'/w
+```
 
-Sovling for u and v:
-    (c31·x + c32·y + 1)u = c11·x + c12·y + c13
-    (c31·x + c32·y + 1)v = c21·x + c22·y + c23
-Similarly for v and rearrange into the following matrix:
-    [u1; u2; u3; u4; v1; v2; v3; v4] = A·[c11; c12; c13; c21; c22; c23; c31; c32]
-    B = A ⋅ X
+Substituting for `u'` and `v'`:
+```
+      u = (c11·x + c12·y + c13)/(c31·x + c32·y + 1)
+    ∴ u = c11·x + c12·y + c13 - c31·x·u - c32·y·u
+      v = (c21·x + c22·y + c23)/(c31·x + c32·y + 1)
+    ∴ v =  c21·x + c22·y + c23 - c31·x·v - c32·y·v
+```
+
+Rearrange into a matrix for all points:
+```
+| u1 |   | x1 y1 1 0  0  0 -x1u1 -y1u1 ||c11|
+| u2 |   | x2 y2 1 0  0  0 -x2u2 -y2u2 ||c12|
+| u3 | = | x3 y3 1 0  0  0 -x3u3 -y3u3 ||c13|
+| u4 |   | x4 y4 1 0  0  0 -x4u4 -y4u4 ||c21|
+| v1 |   | 0  0  0 x1 y1 1 -x1v1 -y1v1 ||c22|
+| v2 |   | 0  0  0 x2 y2 1 -x2v2 -y1v2 ||c23|
+| v3 |   | 0  0  0 x3 y3 1 -x3v3 -y3v3 ||c31|
+| v3 |   | 0  0  0 x4 y4 1 -x4u4 -y4v4 ||c32|
+U = X ⋅ M
+```
+Solve for `M`.
 """
 function get_perspective_matrix(source::AbstractArray, destination::AbstractArray)
     if (length(source) != length(destination))
@@ -81,51 +110,53 @@ function get_perspective_matrix(source::AbstractArray, destination::AbstractArra
     end
     indx, indy = 1, 2
     n = length(source)
-    A = zeros(2n, 8)
-    B = zeros(2n)
+    X = zeros(2n, 8)
+    U = zeros(2n)
     for i in 1:n
-        A[i, 1] = source[i][indx]
-        A[i, 2] = source[i][indy]
-        A[i, 3] = 1
-        A[i, 7] = -source[i][indx] * destination[i][indx]
-        A[i, 8] = -source[i][indy] * destination[i][indx]
-        B[i] = destination[i][indx]
+        X[i, 1] = source[i][indx]
+        X[i, 2] = source[i][indy]
+        X[i, 3] = 1
+        X[i, 7] = -source[i][indx] * destination[i][indx]
+        X[i, 8] = -source[i][indy] * destination[i][indx]
+        U[i] = destination[i][indx]
     end
     for i in 1:n
-        A[i + n, 4] = source[i][indx]
-        A[i + n, 5] = source[i][indy]
-        A[i + n, 6] = 1
-        A[i + n, 7] = -source[i][indx] * destination[i][indy]
-        A[i + n, 8] = -source[i][indy] * destination[i][indy]
-        B[i + n] = destination[i][indy]
+        X[i + n, 4] = source[i][indx]
+        X[i + n, 5] = source[i][indy]
+        X[i + n, 6] = 1
+        X[i + n, 7] = -source[i][indx] * destination[i][indy]
+        X[i + n, 8] = -source[i][indy] * destination[i][indy]
+        U[i + n] = destination[i][indy]
     end
-    M = inv(A) * B
+    M = inv(X) * U
     M = [
         M[1] M[2] M[3];
-        M[4] M[5] M[6]'
-        M[7] M[8] 1
+        M[4] M[5] M[6];
+        M[7] M[8] 1;
     ]
     M
 end
 
-
 function order_points(corners)
-	# order points: top-left, top-right, bottom-right, bottom-left
+	# points: top-left, top-right, bottom-right, bottom-left
 	rect = zeros(typeof(corners[1]), 4)
 	# the top-left point will have the smallest sum, whereas the bottom-right point will have the largest sum
 	s = [point[1] + point[2] for point in corners]
 	rect[1] = corners[argmin(s)]
 	rect[3] = corners[argmax(s)]
-	# now, compute the difference between the points, the top-right point will have the smallest difference,
+	# compute the difference between the points. The top-right point will have the smallest difference,
 	# whereas the bottom-left will have the largest difference
 	diff = [point[2] - point[1] for point in corners]
 	rect[2] = corners[argmin(diff)]
 	rect[4] = corners[argmax(diff)]
-	# return the ordered coordinates
-	return rect
+	rect
 end
 
+"""
+    four_point_transform(image, corners)
 
+Map an image from a quadrilateral defined by 4 `corners` to a rectangle.
+"""
 function four_point_transform(image::AbstractArray, corners::AbstractVector)
     quad = order_points(corners)
     rect = fit_rectangle(corners)
@@ -144,19 +175,8 @@ end
 extend1(v) = [v[1], v[2], 1]
 perspective_transform(M::Matrix) = PerspectiveMap() ∘ LinearMap(M) ∘ extend1
 
-
-function rgb_to_float(pixel::AbstractRGB)
-    Float32.([red(pixel), green(pixel), blue(pixel)])
-end
-
-
-function get_color(image::AbstractArray{T}, point) where T
-    ind = CartesianIndex(Int(floor(point[1])), Int(floor(point[2])))
-    image[ind]
-end
-
 """
-imwarp(image, invM, dest_size)
+    imwarp(image, invM, dest_size)
 
 This function is only for illustrative purposes only.
 It is a slower and less accurate version of ImageTransformations.warp.
@@ -175,6 +195,21 @@ function imwarp(image::AbstractArray{T}, invM::Matrix, dest_size::Tuple{Int, Int
         end
     end          
     warped
+end
+
+function apply_homography(point::Tuple{Int, Int}, M::Matrix)
+    U = M * [point[1]; point[2]; 1]
+    scale = 1/U[3]
+    [U[1] * scale, U[2] * scale]
+end
+
+function rgb_to_float(pixel::AbstractRGB)
+    Float32.([red(pixel), green(pixel), blue(pixel)])
+end
+
+function get_color(image::AbstractArray{T}, point) where T
+    ind = CartesianIndex(Int(floor(point[1])), Int(floor(point[2])))
+    image[ind]
 end
 
 end # Transforms

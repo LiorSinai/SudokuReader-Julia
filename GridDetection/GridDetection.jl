@@ -17,7 +17,6 @@ using .Transforms
 
 export detect_grid, preprocess, construct_grid
 
-
 function detect_grid(image::AbstractArray; kwargs...)
     blackwhite = preprocess(image; kwargs...)
 
@@ -28,7 +27,6 @@ function detect_grid(image::AbstractArray; kwargs...)
     
     blackwhite, quad
 end
-
 
 function preprocess(
     image::AbstractArray; 
@@ -55,7 +53,6 @@ function preprocess(
     blackwhite
 end
 
-
 function construct_grid(height::Int, width::Int; nblocks::Int=3)
     grid = []
     step_i = height/nblocks
@@ -68,6 +65,5 @@ function construct_grid(height::Int, width::Int; nblocks::Int=3)
     end
     grid
 end
-
 
 end # module GridDetection

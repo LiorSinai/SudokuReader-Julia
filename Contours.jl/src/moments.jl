@@ -7,7 +7,6 @@ function area_polygon(vertices::AbstractArray)
     return abs(first_moment(vertices))
 end
 
-
 """
     centroid_polygon(vertices)
 
@@ -29,7 +28,6 @@ function centroid_polygon(vertices::AbstractArray)
     end
     return (Cx/(6 * area), Cy/(6 * area))
 end
-
 
 function first_moment(veritices::AbstractArray)
     # first moment of a simple polygon

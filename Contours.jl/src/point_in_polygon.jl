@@ -14,7 +14,6 @@ function on_segment(q, segment)
         ) && (get_orientation(p, q, r) == 0)
 end
 
-
 """
     get_orientation(p, q, r)
 
@@ -36,7 +35,6 @@ function get_orientation(p, q, r)
     end
     orientation
 end
-
 
 function do_intersect(segment1, segment2)
     o1 = get_orientation(segment1[1], segment1[2], segment2[1])
@@ -60,8 +58,6 @@ function do_intersect(segment1, segment2)
 
     return false
 end
-    
-
 
 """
     point_in_polygon(point, vertices)
