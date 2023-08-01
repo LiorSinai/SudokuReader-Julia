@@ -1,16 +1,13 @@
 # SudokuReader.jl
-By Lior Sinai
-
 ## Overview
 
-This is a Julia program that can read in an image of a Suduko puzzle,
-extract the numbers and place them in a corresponding grid.
-These numbers can be projected back on to the original image:
+This reads in an image of a Sudoku puzzle,
+extracts the numbers and place them in a projects them back on to the original image:
 <figure>
   <img src="images/nytimes_20210807_read.png" alt="nytimes_20210807" style="width:100%">
 </figure>
 
-After this, the user can solve them the puzzle and projected the solved numbers 
+After this, the user can solve them the puzzle and project the solved numbers 
 back on to the image. 
 This repository does not include solver code. A solver I wrote in Julia can be found at 
 [github.com/LiorSinai/SudokuSolver.jl](https://github.com/LiorSinai/SudokuSolver.jl).
@@ -18,16 +15,16 @@ This repository does not include solver code. A solver I wrote in Julia can be f
   <img src="images/nytimes_20210807_solved.png" alt="nytimes_20210807" style="width:100%">
 </figure>
 
-
 ### Example
 
 First train the model:
 1. Download data from the [Chars74k dataset](http://www.ee.surrey.ac.uk/CVSSP/demos/chars74k/). We only need `EnglishFnt.tgz` and sudirectories of Sample000-Sample010. 
-2. Run the `convert_to_mnist.jl` script. 
-3. Run the `train_recogniser.jl` script. This will create LeNet5_e20.bson.
+3. `cd DigitDetection`
+2. `julia --threads auto convert_to_mnist.jl`. 
+3. `julia --threads auto train_recogniser.jl`. This will create LeNet5_e20.bson.
 
 Then to use the program, either run [SudokuReader.ipynb](SudokuReader.ipynb) or code the following:
-```
+```Julia
 image = "images/nytimes_20210807.jpg";
 image = load(image_path)
 # 1 grid
@@ -48,7 +45,7 @@ grid, centres, probs = read_digits(
 ```
 
 Each of the 3 outputs are 9×9 matrices. They can be used to generate an output image as follows:
-```
+```Julia
 threshold = 0.9
 image_out = imresize(image, size(blackwhite));
 canvas = plot(image_out, ticks=nothing, border=:none, size=(800, 600));
@@ -107,5 +104,8 @@ This repository uses the following packages:
 - Flux.jl
 - BSON.jl
 - Plots.jl
-- FileIO.jl
 - Test.jl
+
+---
+
+By Lior Sinai
