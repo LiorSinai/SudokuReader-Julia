@@ -30,5 +30,5 @@ Manifest.toml
 
 # project folders
 Deprecated/
-DigitDetection/models/
+DigitDetection/outputs/
 images/outputs/

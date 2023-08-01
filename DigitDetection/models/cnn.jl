@@ -8,7 +8,6 @@ function calc_output_size(input_size::Int, filter_size::Int, stride::Int=1, pad:
     floor(Int, (input_size + 2pad - filter_size)/stride) + 1
 end
 
-
 """
 CNN model with Dropout
 
@@ -16,7 +15,7 @@ layers:     7
 parameters: 18,378 (default) 5,142 (n1=6, n2=16)
 size:       72.9 KiB (default), 21.195 KiB (n1=6, n2=16)
 """
-function build_model_cnn_dropout(; k1=5, n1=16, k2=5, n2=32, pad=0)
+function cnn_dropout(; k1=5, n1=16, k2=5, n2=32, pad=0)
     input_dim = 28
     stride = 1
     max_pool_window = 2
@@ -41,8 +40,7 @@ function build_model_cnn_dropout(; k1=5, n1=16, k2=5, n2=32, pad=0)
     )
 end
 
-
-function build_model_tiny()
+function cnn_tiny()
     input_dim = 28
     stride_ = 1
     pad = 0
@@ -60,15 +58,14 @@ function build_model_tiny()
     )
 end
 
-
 """
-Huge CNN, from a popular Medium blog post
+Huge CNN from a popular Medium blog post
 
 layers:     7
 parameters: 1,199,882
 size:       4.56 MB
 """
-function build_model_huge()
+function cnn_huge()
     input_dim = 28
     stride_ = 1
     pad = 0
@@ -99,7 +96,7 @@ parameters: 542,230
 size:       2.0 MB
 source:     https://machinelearningmastery.com/how-to-develop-a-convolutional-neural-network-from-scratch-for-mnist-handwritten-digit-classification/
 """
-function build_model_mastery()
+function cnn_mastery()
     input_dim = 28
     stride_ = 1
     pad = 0

@@ -12,7 +12,7 @@ using Flux
 
 sigmoid = σ
 
-function build_model_nn()
+function multilayer_perceptron()
     return Chain(
         Flux.flatten, 
         Dense(784, 32, sigmoid),

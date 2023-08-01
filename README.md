@@ -37,7 +37,7 @@ blackwhite, quad = detect_grid(
 # 2 straighten
 warped, invM = four_point_transform(blackwhite, quad)
 # 3 Digit detection
-BSON.@load "DigitDetection\\models\\LeNet5_e20.bson" model
+BSON.@load "DigitDetection\\outputs\\LeNet5\\LeNet5_e20.bson" model
 grid, centres, probs = read_digits(
     warped, model, 
     offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.1
@@ -101,7 +101,7 @@ This repository uses the following packages:
 - ImageTransformations.jl
 - CoordinateTransformations.jl
 - StaticArrays.jl
-- Flux.jl
+- Flux.jl >= 0.13.9
 - BSON.jl
 - Plots.jl
 - Test.jl
