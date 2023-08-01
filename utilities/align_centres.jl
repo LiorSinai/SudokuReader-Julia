@@ -1,4 +1,3 @@
-
 function align_centres(centres::Matrix, guides::BitMatrix)
     centres_aligned = copy(centres)
     if size(centres) != size(guides)

@@ -20,9 +20,9 @@ include("LeNet5.jl")
 include("cnn.jl")
 include("nn.jl")
 
-
 #### load data
-@time data_char74k, labels_char74k = load_data("../../datasets/74k_numbers_28x28/");
+char74k_filepath = "../../../datasets/Char74k/74k_numbers_28x28/"
+@time data_char74k, labels_char74k = load_data(char74k_filepath);
 
 data = data_char74k 
 labels = labels_char74k
@@ -31,7 +31,7 @@ println("data loaded\n")
 ### transform test set
 seed = 227
 rng = MersenneTwister(seed)
-x_train, y_train, x_test, y_test = split_data(data, labels, rng=rng, test_split=0.2);
+x_train, y_train, x_test, y_test = split_data(rng, data, labels; test_split=0.2);
 y_train = onehotbatch(y_train, 0:9)
 y_test =  onehotbatch(y_test, 0:9)
 train_data = Flux.DataLoader((Flux.batch(x_train), y_train), batchsize=128)
@@ -41,7 +41,8 @@ valid_data = (Flux.batch(x_test[1:n_valid]), y_test[:, 1:n_valid])
 test_data = (Flux.batch(x_test[n_valid+1:end]), y_test[:, n_valid+1:end])
 
 # build model
-output_path = joinpath("DigitDetection\\models", "LeNet5")
+output_dir = "models"
+output_path = joinpath(output_dir, "LeNet5")
 model = LeNet5()
 display(model)
 println("")
@@ -88,13 +89,13 @@ function train!(loss, ps, train_data, opt, acc, valid_data; n_epochs=100)
 
         # save model
         save_path = output_path * "_e$e" * ".bson"
-        BSON.@save save_path model history
+        BSON.bson(save_path,  Dict(:model=>model, :history=>history))
     end
     history
 end
 start_time = time_ns()
 history = train!(
-    loss, params(model), train_data, opt, 
+    loss, Flux.params(model), train_data, opt, 
     accuracy, valid_data, n_epochs=20
     )
 end_time = time_ns() - start_time
@@ -120,5 +121,5 @@ plot!(canvas, [epochs[end]], [test_acc], markershape=:star, label="test")
 plot!(canvas, legend=:topleft)
 plot!(canvas, ylims=(ylims(canvas)[1], 1))
 
-savefig(canvas, "images/outputs/history.png")
+savefig(canvas, joinpath(output_dir, "history.png"))
 canvas

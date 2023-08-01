@@ -1,7 +1,7 @@
 
 module DigitExtration
 
-include("../utilities/ConnectedComponentStatistics.jl")
+include("ConnectedComponentStatistics.jl")
 using Flux: softmax, batch, unsqueeze
 using Images: imresize, label_components
 using ImageBinarization
@@ -9,7 +9,6 @@ using ImageBinarization
 export read_digits, extract_digit,
     detect_in_centre, make_circle_kernel,
     prediction
-
 
 function read_digits(
     image::AbstractArray,
@@ -51,7 +50,6 @@ function read_digits(
     grid, centres, probabilities
 end
 
-
 function extract_digit(image_in::AbstractArray; kwargs...)
     image = copy(image_in)
     # have to binarize again because of warping
@@ -83,9 +81,8 @@ function extract_digit(image_in::AbstractArray; kwargs...)
     (height/2, width/2), image
 end
 
-
 """
-detect_in_centre(image::AbstractArray; [radius_ratio], [threshold])
+    detect_in_centre(image::AbstractArray; radius_ratio=0.25, threshold=0.10)
 
 Detect an object in a region of interest. This is done by convolving it with a circle.
 """
@@ -97,7 +94,6 @@ function detect_in_centre(image::AbstractArray; radius_ratio::Float64=0.25, thre
     detected = sum(conv .!= 0)/(pi * radius * radius) > threshold
     detected
 end
-
 
 function make_circle_kernel(height::Int, width::Int, radius::Float64)
     # backward algorithm
@@ -116,7 +112,6 @@ end
 
 make_circle_kernel(height::Int, width::Int, radius::Int) = make_circle_kernel(height, width, Float64(radius))
 
-
 function pad_image(image::AbstractArray{T}; pad_ratio=0.15) where T
     height, width = size(image)
     pad = floor(Int, pad_ratio * max(height, width))
@@ -125,17 +120,15 @@ function pad_image(image::AbstractArray{T}; pad_ratio=0.15) where T
     imnew
 end
 
-
 function prediction(model, image::AbstractArray, pad_ratio=0.2)
     image = pad_image(image, pad_ratio=pad_ratio)
     image = imresize(image, (28, 28))
     x = batch([unsqueeze(Float32.(image), 3)])
     logits = model(x)
-    probabilites = softmax(logits)
-    idx = argmax(probabilites)
+    probabilities = softmax(logits)
+    idx = argmax(probabilities)
     ŷ = idx[1] - 1
-    ŷ, probabilites[idx]
+    ŷ, probabilities[idx]
 end
-
 
 end # module DigitExtration

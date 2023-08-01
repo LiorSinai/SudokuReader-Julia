@@ -8,12 +8,12 @@ using Images
 using ImageFiltering
 using ImageBinarization
 
-include("../Contours.jl/src/Contours.jl");
+include("../Contours/src/Contours.jl");
 include("../utilities/invert_image.jl");
-include("../utilities/Transforms.jl");
+include("PerspectiveTransformations.jl");
 
 using .Contours
-using .Transforms
+using .PerspectiveTransformations
 
 export detect_grid, preprocess, construct_grid
 
