@@ -38,8 +38,14 @@ blackwhite, quad = detect_grid(
 warped, invM = four_point_transform(blackwhite, quad)
 # 3 Digit detection
 BSON.@load "DigitDetection\\outputs\\LeNet5\\LeNet5_e20.bson" model
-grid, centres, probs = read_digits(
-    warped, model, 
+function predictor(digit_image::AbstractArray)
+    logits = digit_image |> DigitExtraction.prepare_digit_for_model |> model
+    idx = argmax(logits)
+    probabilites = softmax(logits)
+    idx[1] - 1, probabilites[idx]
+end
+grid, centres, probs = extract_digits_from_grid(
+    warped, predictor; 
     offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.1
     );
 ```
@@ -95,13 +101,11 @@ These are useful for getting around Julia's slow start up times for debugging.
 ## Dependencies
 
 This repository uses the following packages:
-- Images.jl
 - ImageFiltering.jl
 - ImageBinarization.jl
 - ImageTransformations.jl
 - CoordinateTransformations.jl
 - StaticArrays.jl
-- Flux.jl >= 0.13.9
 - BSON.jl
 - Plots.jl
 - Test.jl
