@@ -20,7 +20,7 @@ include("models/multilayer_perceptron.jl")
 
 #### load data
 char74k_filepath = "../../../datasets/Char74k/74k_numbers_28x28/"
-@time data_char74k, labels_char74k = load_data(char74k_filepath);
+@time data_char74k, labels_char74k = load_digit_images(char74k_filepath);
 
 data = data_char74k 
 labels = labels_char74k

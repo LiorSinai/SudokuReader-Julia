@@ -38,8 +38,14 @@ blackwhite, quad = detect_grid(
 warped, invM = four_point_transform(blackwhite, quad)
 # 3 Digit detection
 BSON.@load "DigitDetection\\outputs\\LeNet5\\LeNet5_e20.bson" model
-grid, centres, probs = read_digits(
-    warped, model, 
+function predictor(digit_image::AbstractArray)
+    logits = digit_image |> DigitExtraction.prepare_digit_for_model |> model
+    idx = argmax(logits)
+    probabilites = softmax(logits)
+    idx[1] - 1, probabilites[idx]
+end
+grid, centres, probs = extract_digits_from_grid(
+    warped, predictor; 
     offset_ratio=0.1, radius_ratio=0.25, detection_threshold=0.1
     );
 ```
@@ -87,24 +93,22 @@ This is mostly done with Images.jl and related modules as well as custom code.
 
 The algorithm works well on well selected images. However it is not robust and the false positivity rate is high.
 
-## Notebooks
+## Structure
 
-I have provided development notebooks in the [notebooks](notebooks) folder.
-These are useful for getting around Julia's slow start up times for debugging.
+This is a mono-repository. Each folder is a mostly standalone module which functions independently of the others.
+There are some shared functions in the [utilities](utilities) folder.
 
-## Dependencies
+Notebooks for easy development are provided in the [notebooks](notebooks) folder.
 
-This repository uses the following packages:
-- Images.jl
-- ImageFiltering.jl
-- ImageBinarization.jl
-- ImageTransformations.jl
-- CoordinateTransformations.jl
-- StaticArrays.jl
-- Flux.jl >= 0.13.9
-- BSON.jl
-- Plots.jl
-- Test.jl
+## Dataset source
+
+The digit detection model is trained on the digits from the Chars74K dataset.
+These digits are based off computer fonts.
+There are a total of 10160 images.
+
+The full dataset file with 62 classes can be found here: http://www.ee.surrey.ac.uk/CVSSP/demos/chars74k/ (EnglishImg.tgz).
+
+It is highly recommended to _not_ use the MNIST dataset. The handwritten digits in MNIST differ notably from computer font digits and can result in high confusion rates e.g. between 7s and 1s.
 
 ---
 
