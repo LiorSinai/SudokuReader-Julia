@@ -1,4 +1,4 @@
-# Contours.jl
+# ImageContours.jl
 
 ## Definitions
 

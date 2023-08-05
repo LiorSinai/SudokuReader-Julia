@@ -1,5 +1,5 @@
 
-module Contours
+module ImageContours
 
 export find_contours,
 
@@ -20,4 +20,4 @@ include("draw.jl")
 area_contour(contour::AbstractArray{CartesianIndex}) = area_polygon(contour)
 centroid_contour(contour::AbstractArray{CartesianIndex}) = centroid_polygon(contour)
 
-end # module Contours
+end # module ImageContours

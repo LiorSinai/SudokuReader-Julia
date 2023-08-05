@@ -3,8 +3,8 @@ Lior Sinai, 28 July 2021
 =#
 
 using Test
-include("../src/Contours.jl")
-using .Contours
+include("../src/ImageContours.jl")
+using .ImageContours
 
 square = [
     0  0  0  0  0  0  0  0  0  0;
