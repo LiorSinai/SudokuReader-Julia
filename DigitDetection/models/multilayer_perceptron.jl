@@ -10,8 +10,6 @@ source:     https://fluxml.ai/Flux.jl/v0.2/examples/logreg.html
 
 using Flux
 
-sigmoid = σ
-
 function multilayer_perceptron()
     return Chain(
         Flux.flatten, 

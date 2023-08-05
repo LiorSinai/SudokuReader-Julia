@@ -5,7 +5,6 @@ Lior Sinai, 25 July 2021
 module PerspectiveTransformations
 
 using ImageTransformations, CoordinateTransformations
-using StaticArrays
 using Images
 
 export fit_rectangle, fit_quad
@@ -160,6 +159,7 @@ Map an image from a quadrilateral defined by 4 `corners` to a rectangle.
 function four_point_transform(image::AbstractArray, corners::AbstractVector)
     quad = order_points(corners)
     rect = fit_rectangle(corners)
+    ## set top right corner to (1, 1)
     destination = [CartesianIndex(point[1] - rect[1][1] + 1, point[2] - rect[1][2] + 1) for point in rect]
     maxWidth = destination[2][1] - destination[1][1] 
     maxHeight = destination[3][2] - destination[2][2] 
@@ -212,4 +212,4 @@ function get_color(image::AbstractArray{T}, point) where T
     image[ind]
 end
 
-end # Transforms
+end # PerspectiveTransformations

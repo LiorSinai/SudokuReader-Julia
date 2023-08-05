@@ -5,14 +5,19 @@ Lior Sinai, 1 August 2021
 =#
 using Random
 using Images
-using DataFrames, CSV
 using Flux
 using Flux: onecold, batch, unsqueeze
 
 ### Load data
 
-function load_data(data_dir::AbstractString)
-    # data is images within a folder with name dir/label/filename.png
+"""
+    load_digit_images(data_dir)
+
+Load digit images from a folder with the following structure: `data_dir`/label/filename.png
+where label is in `[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]`.
+"""
+function load_digit_images(data_dir::AbstractString)
+    # data is images within a folder with name data_dir/label/filename.png
     digits = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
     data = Array{Float32, 3}[] # Flux expects Float32 only, else raises a warning
@@ -29,27 +34,6 @@ function load_data(data_dir::AbstractString)
     end
     batch(data), labels
 end
-
-function load_mnist_data(rng::AbstractRNG, filepath::AbstractString; num_samples::Int=-1)
-    # data is in CSV format
-    data = Array{Float32, 3}[] # Flux expects Float32 only, else raises a warning
-    labels = Int[]
-    df = CSV.read(filepath, DataFrame)
-    if num_samples > 0
-        idxs = randperm(rng, nrow(df))[1:num_samples]
-        df = df[idxs, :]
-    end
-    for row in eachrow(df)
-        image = permutedims(reshape(collect(row[2:end]), (28, 28)))/(255f0)
-        image = unsqueeze(Float32.(image), 3)
-        push!(data, image)
-        push!(labels, row[1])
-        end
-    batch(data), labels
-end
-
-load_mnist_data(filepath::AbstractString; num_samples::Int=1) = 
-    load_mnist_data(rng, filepath; num_samples=num_samples)
 
 ### Split data    
 
@@ -135,7 +119,6 @@ function update_history!(history::Dict, model, loss, train_data::Tuple, val_data
     @printf "val_acc=%.4f%%; " val_acc * 100
     @printf "val_loss=%.4f; " val_loss
 end
-
 
 ### Reporting
 
