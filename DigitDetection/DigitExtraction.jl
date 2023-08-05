@@ -14,7 +14,7 @@ MODEL_SIZE = (28, 28)
     extract_digits_from_grid(image, model; offset_ratio=0.1, detect_options...)
 
 Extract multiple digits from a 9×9 grid using a model.
-`predictor` should take an input image of a digit and return a tuple of `(label, probability)`.
+`predictor` should take an input image of a digit and return a tuple of `(label, confidence)`.
 `offset_ratio` is extra overlap from neighbouring cells to include in each cell.
 This is recommended if the cells are not exact squares.
 See `detect_in_centre` for `detect_options`.
@@ -33,7 +33,7 @@ function extract_digits_from_grid(
 
     grid = zeros(Int, GRID_SIZE)
     centres =  [(-1.0, -1.0) for i in 1:GRID_SIZE[1], j in 1:GRID_SIZE[2]]
-    probabilities = zeros(Float32, GRID_SIZE)
+    confidences = zeros(Float32, GRID_SIZE)
 
     for (i_grid, i_img) in enumerate(1:step_i:height)
         for (j_grid, j_img) in enumerate(1:step_j:width)
@@ -44,16 +44,16 @@ function extract_digits_from_grid(
             RoI = image[prev_i:next_i, prev_j:next_j]
             if detect_in_centre(RoI; detect_options...)
                 digit, centre = extract_digit(RoI; detect_options...)
-                label, probability = predictor(digit)
+                label, confidence = predictor(digit)
                 grid[i_grid, j_grid] = label
-                probabilities[i_grid, j_grid] = probability
+                confidences[i_grid, j_grid] = confidence
             else
                 centre = (step_i/2, step_j/2)
             end
             centres[i_grid, j_grid] = (centre[1] + prev_i, centre[2] + prev_j)
         end
     end
-    grid, centres, probabilities
+    grid, centres, confidences
 end
 
 """
