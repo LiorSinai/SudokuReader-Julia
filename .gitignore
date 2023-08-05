@@ -20,13 +20,11 @@ docs/site/
 # environment.
 Manifest.toml
 
-
 # VS Code
 .vscode
 
 # Jupter Notebooks
 .ipynb_checkpoints
-
 
 # project folders
 Deprecated/
